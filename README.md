@@ -4,7 +4,7 @@ OpenAI based Gym environment for training RL caching agent
 install it:
 
 <code>
-pip install -e gym-cache
+python -m pip install -e .
 </code>
 
 then import it like this:
