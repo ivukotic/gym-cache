@@ -9,7 +9,4 @@ register(
     timestep_limit=1000,
     reward_threshold=1.0,
     nondeterministic=True,
-    scope=True,
-    dataset=True,
-    filename=True,
 )

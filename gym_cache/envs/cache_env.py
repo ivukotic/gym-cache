@@ -5,62 +5,43 @@ import gym
 from gym import error, spaces
 from gym import utils
 from gym.utils import seeding
+import pandas as pd
+import numpy as np
 
 import logging
 logger = logging.getLogger(__name__)
 
 
-class CacheEnv(gym.Env, utils.EzPickle):
+class CacheEnv(gym.Env):
+
     metadata = {'render.modes': ['human']}
+    actions_num = 1  # estimated probability that a file is in cache.
 
     def __init__(self):
+        self.accesses_filename = 'ANALY_MWT2_UCORE_ready'
+        self.cache_hwm = .95
+        self.cache_lwm = .90
+        self.cache_size = 1024 * 1024 * 1024  # 1GB
+        self.cache_bytes = 0
         self.viewer = None
-        self.server_process = None
-        self.server_port = None
-        self._configure_environment()
-        self.observation_space = spaces.Box(low=-1, high=1,
-                                            shape=(self.env.getStateSize()))
-        # Action space omits the Tackle/Catch actions, which are useful on defense
-        self.action_space = spaces.Tuple((spaces.Discrete(3),
-                                          spaces.Box(low=0, high=100, shape=1),
-                                          spaces.Box(low=-180, high=180, shape=1),
-                                          spaces.Box(low=-180, high=180, shape=1),
-                                          spaces.Box(low=0, high=100, shape=1),
-                                          spaces.Box(low=-180, high=180, shape=1)))
-        # self.status = hfo_py.IN_GAME
+        self.state = None
+        self.action_space = spaces.Box(low=0.0, high=1.0, shape=[1], dtype=np.float32)
+        self.observation_space = spaces.Box(low=[0,0,0,0,0,0], high=[100,100,100,100,100,100], dtype=np.int32)
 
     def __del__(self):
-        # self.env.act(hfo_py.QUIT)
         self.env.step()
-        os.kill(self.server_process.pid, signal.SIGINT)
-        if self.viewer is not None:
-            os.kill(self.viewer.pid, signal.SIGKILL)
 
-    def _configure_environment(self):
-        """
-        Provides a chance for subclasses to override this method and supply
-        a different server configuration. By default, we initialize one
-        offense agent against no defenders.
-        """
-        return
+    def load_access_data(self):
+        with pd.HDFStore(pq + '.h5') as hdf:
+            print("keys:", hdf.keys())
+            self.accesses = hdf.select('data')
 
-    def _start_viewer(self):
-        # """
-        # Starts the CacheWindow visualizer. Note the viewer may also be
-        # used with a *.rcg logfile to replay a game. See details at
-        # https://github.com/LARG/HFO/blob/master/doc/manual.pdf.
-        # """
-        # cmd = hfo_py.get_viewer_path() +\
-        #     " --connect --port %d" % (self.server_port)
-        # self.viewer = subprocess.Popen(cmd.split(' '), shell=False)
-        return
-
-    def _step(self, action):
+    def step(self, action):
         self._take_action(action)
         self.status = self.env.step()
         reward = self._get_reward()
         ob = self.env.getState()
-        episode_over = False  # self.status != hfo_py.IN_GAME
+        episode_over = False
         return ob, reward, episode_over, {}
 
     def _take_action(self, action):
@@ -84,7 +65,7 @@ class CacheEnv(gym.Env, utils.EzPickle):
         # else:
         return 0
 
-    def _reset(self):
+    def reset(self):
         # """ Repeats NO-OP action until a new episode begins. """
         # while self.status == hfo_py.IN_GAME:
         #     self.env.act(hfo_py.NOOP)
@@ -94,17 +75,9 @@ class CacheEnv(gym.Env, utils.EzPickle):
         #     self.status = self.env.step()
         return self.env.getState()
 
-    def _render(self, mode='human', close=False):
+    def render(self, mode='human', close=False):
         """ Viewer only supports human mode currently. """
         if close:
-            if self.viewer is not None:
-                os.kill(self.viewer.pid, signal.SIGKILL)
+            pass
         else:
-            if self.viewer is None:
-                self._start_viewer()
-
-
-ACTION_LOOKUP = {
-    0: "dontCache",
-    1: "Cache"
-}
+            pass
