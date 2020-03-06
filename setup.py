@@ -6,6 +6,7 @@ setup(
     install_requires=[
         'gym>=0.2.3',
         'pandas>=0.25.3',
-        'scikit-learn>=0.22.1'
+        'scikit-learn>=0.22.1',
+        'tables'
     ]
 )
