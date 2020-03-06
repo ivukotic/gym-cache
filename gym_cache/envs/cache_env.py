@@ -17,45 +17,51 @@ class CacheEnv(gym.Env):
     metadata = {'render.modes': ['human']}
     actions_num = 1  # estimated probability that a file is in cache.
 
-    def __init__(self):
-        self.accesses_filename = 'ANALY_MWT2_UCORE_ready'
+    def __init__(self, InputData, CacheSize):
+        self.accesses_filename = InputData + '.h5'
+        self.load_access_data()
         self.cache_hwm = .95
         self.cache_lwm = .90
-        self.cache_size = 1024 * 1024 * 1024  # 1GB
-        self.cache_bytes = 0
+        self.cache_size = CacheSize
+        self.cache_kbytes = 0
         self.viewer = None
         self.state = None
+        self.sizeOfLastFileConsidered = 0
+        maxes = self.accesses.max()
         self.action_space = spaces.Box(low=0.0, high=1.0, shape=[1], dtype=np.float32)
-        self.observation_space = spaces.Box(low=[0,0,0,0,0,0], high=[100,100,100,100,100,100], dtype=np.int32)
-
-    def __del__(self):
-        self.env.step()
+        self.observation_space = spaces.Box(
+            low=np.array([0, 0, 0, 0, 0, 0, 0]),
+            high=np.array([maxes[0], maxes[1], maxes[2], maxes[3], maxes[4], maxes[5], self.cache_size]),
+            dtype=np.int32
+        )
+        print('environment loaded!')
 
     def load_access_data(self):
-        with pd.HDFStore(pq + '.h5') as hdf:
-            print("keys:", hdf.keys())
+        with pd.HDFStore(self.accesses_filename) as hdf:
+            print("keys in file:", self.accesses_filename, ':', hdf.keys())
             self.accesses = hdf.select('data')
+            print(self.accesses.head())
+
+    def __del__(self):
+        pass
+        # self.env.step()
 
     def step(self, action):
         self._take_action(action)
-        self.status = self.env.step()
+        # self.status = self.env.step()
         reward = self._get_reward()
-        ob = self.env.getState()
+        ob = 99  # self.env.getState()
         episode_over = False
         return ob, reward, episode_over, {}
 
     def _take_action(self, action):
-        # """ Converts the action space into an HFO action. """
-        # action_type = ACTION_LOOKUP[action[0]]
-        # if action_type == hfo_py.DASH:
-        #     self.env.act(action_type, action[1], action[2])
-        # elif action_type == hfo_py.TURN:
-        #     self.env.act(action_type, action[3])
-        # elif action_type == hfo_py.KICK:
-        #     self.env.act(action_type, action[4], action[5])
-        # else:
-        #     print('Unrecognized action %d' % action_type)
-        #     self.env.act(hfo_py.NOOP)
+        # """ checks if cache hit HWM """
+        if self.cache_kbytes > self.cache_size * self.cache_hwm:
+            # needs a cleanup
+            pass
+        self.cache_kbytes += self.sizeOfLastFileConsidered
+        # """ ads last file to cache """
+
         return
 
     def _get_reward(self):
@@ -68,9 +74,6 @@ class CacheEnv(gym.Env):
     def reset(self):
         # """ Repeats NO-OP action until a new episode begins. """
         # while self.status == hfo_py.IN_GAME:
-        #     self.env.act(hfo_py.NOOP)
-        #     self.status = self.env.step()
-        # while self.status != hfo_py.IN_GAME:
         #     self.env.act(hfo_py.NOOP)
         #     self.status = self.env.step()
         return self.env.getState()
