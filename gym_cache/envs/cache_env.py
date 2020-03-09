@@ -30,6 +30,7 @@ class CacheEnv(gym.Env):
         maxes = self.accesses.max()
         self.action_space = spaces.Discrete(2)
         self.observation_space = spaces.Box(
+            # first 6 are tokens, 7th is filesize, 8th is how full is cache at the moment
             low=np.array([0, 0, 0, 0, 0, 0, 0, 0]),
             high=np.array([maxes[0], maxes[1], maxes[2], maxes[3], maxes[4], maxes[5], maxes[6], self.cache_size]),
             dtype=np.int32
@@ -37,6 +38,7 @@ class CacheEnv(gym.Env):
         print('environment loaded!')
 
     def load_access_data(self):
+        # last variable is the fileID.
         with pd.HDFStore(self.accesses_filename) as hdf:
             print("keys in file:", self.accesses_filename, ':', hdf.keys())
             self.accesses = hdf.select('data')
