@@ -12,7 +12,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-class CacheEnv(gym.Env):
+class CacheContinousEnv(gym.Env):
 
     metadata = {'render.modes': ['human']}
     actions_num = 1  # estimated probability that a file is in cache.
@@ -28,7 +28,7 @@ class CacheEnv(gym.Env):
         self.state = None
         self.size_of_last_file_considered = 0
         maxes = self.accesses.max()
-        self.action_space = spaces.Discrete(2)
+        self.action_space = spaces.Box(low=0.0, high=1.0, shape=(1,), dtype=np.float32)
         self.observation_space = spaces.Box(
             low=np.array([0, 0, 0, 0, 0, 0, 0, 0]),
             high=np.array([maxes[0], maxes[1], maxes[2], maxes[3], maxes[4], maxes[5], maxes[6], self.cache_size]),

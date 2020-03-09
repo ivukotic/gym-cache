@@ -1,5 +1,5 @@
 # gym-cache
-OpenAI based Gym environment for training RL caching agent
+OpenAI based Gym environments for training RL caching agent
 
 install it:
 
@@ -13,3 +13,5 @@ then import it like this:
 import gym
 gym.make('gym_cache:Cache-v0')
 </code>
+
+There are two discrete action environments (*Cache-v0* and *Cache-large-v0*) and one discrete action environment (*Cache-continuous-v0*).
