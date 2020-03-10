@@ -8,7 +8,7 @@ register(
     entry_point='gym_cache.envs:CacheEnv',
     kwargs={
         'InputData': 'data/ANALY_MWT2_UCORE_processed',
-        'CacheSize': 1024 * 1024
+        'CacheSize': 1024 * 1024 * 1024
     },
     # reward_threshold=1.0,
     max_episode_steps=200,
@@ -20,7 +20,7 @@ register(
     entry_point='gym_cache.envs:CacheEnv',
     kwargs={
         'InputData': 'data/ANALY_MWT2_UCORE_processed',
-        'CacheSize': 1024 * 1024 * 1024
+        'CacheSize': 100 * 1024 * 1024 * 1024
     },
     # reward_threshold=1.0,
     max_episode_steps=2000,
