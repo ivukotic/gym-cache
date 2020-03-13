@@ -23,15 +23,15 @@ class CacheEnv(gym.Env):
         self.load_access_data()
         self.seed()  # probably not needed
 
-        self.cache_hwm = .95
-        self.cache_lwm = .90
         self.cache_size = CacheSize
+        self.cache_hwm = .95 * self.cache_size
+        self.cache_lwm = .90 * self.cache_size
         self.cache_kbytes = 0
-        self.cache_content = []
+        self.cache_content = {}
         self.files_processed = 0
 
-        self.old_fID = 0
-        self.old_fs = 0
+        self.weight = 0  # delivered in next cycle.
+        self.found_in_cache = False  # from previous cycle
 
         self.viewer = None
 
@@ -57,50 +57,61 @@ class CacheEnv(gym.Env):
         self.np_random, seed = seeding.np_random(seed)
         return [seed]
 
+    def _cache_cleanup(self):
+        # order files by access instance
+        acc = pd.DataFrame.from_dict(self.cache_content, orient='index', columns=['accNo', 'fs']).sort_values(by='accNo', axis=0)
+        # starting from lowest number remove from cache
+        counter = 0
+        while self.cache_kbytes > self.cache_lwm:
+            row = acc.iloc[counter, :]
+            self.cache_kbytes -= row['fs']
+            del self.cache_content[row.name]
+            counter += 1
+        print('cleaned', counter, 'files.')
+
     def step(self, action):
+
+        # calculate reward from old weight, was it in cache and action
+        reward = self.weight
+        if (self.found_in_cache and action == 0) or (not self.found_in_cache and action == 1):
+            reward = -reward
+
         # """ checks if cache hit HWM """
-        if self.cache_kbytes > (self.cache_size * self.cache_hwm):
-            print('cache cleanup starting')
+        # print('cache filled:', self.cache_kbytes)
+        if self.cache_kbytes > self.cache_hwm:
+            print('cache cleanup starting on access:', self.files_processed)
+            self._cache_cleanup()
 
         row = self.accesses.iloc[self.files_processed, :]
         fID = row['fID']
         fs = row['kB']
         # print(row['1'], row['2'], row['3'], row['4'], row['5'], row['6'], row['kB'], row['fID'])
 
-        found_in_cache = False
-        if self.files_processed == 0:
-            reward = 0
+        self.found_in_cache = fID in self.cache_content
+        # print('found in cache', self.found_in_cache, fID, self.cache_content)
+        if self.found_in_cache:
+            self.weight = fs * 0.05
         else:
-            found_in_cache = self.old_fID in self.cache_content
-            if found_in_cache:
-                reward = self.old_fs * 0.05
-            else:
-                reward = self.old_fs
-            if (found_in_cache and action == 0) or (not found_in_cache and action == 1):
-                reward = -reward
-
-        done = False
-        self.state = [row['1'], row['2'], row['3'], row['4'], row['5'], row['6'],
-                      fs, self.cache_kbytes * 100 // self.cache_size]
-
-        # actually add file to cache
-        if not found_in_cache:
+            self.weight = fs
             self.cache_kbytes += fs
-            self.cache_content.append(fID)
+
+        self.cache_content[fID] = (self.files_processed, fs)
         self.files_processed += 1
-        self.old_fs = fs
-        self.old_fID = fID
-        return np.array(self.state), int(reward), done, {}
+
+        state = [row['1'], row['2'], row['3'], row['4'], row['5'], row['6'],
+                 fs, self.cache_kbytes * 100 // self.cache_size]
+
+        return np.array(state), int(reward), False, {}
 
     def reset(self):
         self.files_processed = 0
-        self.cache_content = []
+        self.cache_content = {}
         self.cache_kbytes = 0
+        return self.step(0)[0]
 
     def render(self, mode='human'):
         screen_width = 600
         screen_height = 400
-        scale = 1
 
         if self.viewer is None:
             from gym.envs.classic_control import rendering

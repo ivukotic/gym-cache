@@ -11,7 +11,7 @@ register(
         'CacheSize': 1024 * 1024 * 1024
     },
     # reward_threshold=1.0,
-    max_episode_steps=200,
+    max_episode_steps=20000000,
     nondeterministic=False,
 )
 
@@ -23,7 +23,7 @@ register(
         'CacheSize': 100 * 1024 * 1024 * 1024
     },
     # reward_threshold=1.0,
-    max_episode_steps=2000,
+    max_episode_steps=20000000,
     nondeterministic=True,
 )
 
@@ -35,6 +35,6 @@ register(
         'CacheSize': 1024 * 1024 * 1024
     },
     # reward_threshold=1.0,
-    max_episode_steps=2000,
+    max_episode_steps=20000000,
     nondeterministic=True,
 )
