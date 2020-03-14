@@ -51,7 +51,7 @@ class CacheEnv(gym.Env):
         with pd.HDFStore(self.accesses_filename) as hdf:
             print("keys in file:", self.accesses_filename, ':', hdf.keys())
             self.accesses = hdf.select('data')
-            print(self.accesses.head())
+            print("accesses loaded:", self.accesses.shape[0])
 
     def seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
@@ -67,7 +67,7 @@ class CacheEnv(gym.Env):
             self.cache_kbytes -= row['fs']
             del self.cache_content[row.name]
             counter += 1
-        print('cleaned', counter, 'files.')
+        # print('cleaned', counter, 'files.')
 
     def step(self, action):
 
@@ -79,7 +79,7 @@ class CacheEnv(gym.Env):
         # """ checks if cache hit HWM """
         # print('cache filled:', self.cache_kbytes)
         if self.cache_kbytes > self.cache_hwm:
-            print('cache cleanup starting on access:', self.files_processed)
+            # print('cache cleanup starting on access:', self.files_processed)
             self._cache_cleanup()
 
         row = self.accesses.iloc[self.files_processed, :]
