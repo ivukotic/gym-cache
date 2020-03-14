@@ -3,12 +3,13 @@ from gym.envs.registration import register
 
 logger = logging.getLogger(__name__)
 
+# discrete action 20TB cache
 register(
     id='Cache-v0',
     entry_point='gym_cache.envs:CacheEnv',
     kwargs={
         'InputData': 'data/ANALY_MWT2_UCORE_processed',
-        'CacheSize': 1024 * 1024 * 1024
+        'CacheSize': 20 * 1024 * 1024 * 1024
     },
     # reward_threshold=1.0,
     max_episode_steps=20000000,

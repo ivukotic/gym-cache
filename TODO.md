@@ -1,6 +1,4 @@
-Implement cache clean up.
 add visualization on cache hit rate.
-
 
 Create environment that reads that sparse array and 
 * dolls file representation (space), 
