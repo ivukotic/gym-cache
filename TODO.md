@@ -1,9 +1,8 @@
+reset should return first access (first state)
 add visualization on cache hit rate.
-
-Create environment that reads that sparse array and 
-* dolls file representation (space), 
-* get actions (cache/don't cache), 
-* returns rewards.
+add actor cleaning step: 
+* move from hwm/lwm cleanup to cleanup for each file and have hwm:98%
+* ask actor for decission to remove or not. List files in order of LRU. Signal to not learn is given by listing file size as negative value. 
 
 # input generation
 values:
