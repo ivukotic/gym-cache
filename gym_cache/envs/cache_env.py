@@ -1,9 +1,10 @@
-import os
-import time
-import signal
+# import os
+# import time
+# import signal
+# import matplotlib.pyplot as plt
 import gym
-from gym import error, spaces
-from gym import utils
+from gym import spaces
+# from gym import error, utils
 from gym.utils import seeding
 import pandas as pd
 import numpy as np
@@ -23,12 +24,17 @@ class CacheEnv(gym.Env):
         self.load_access_data()
         self.seed()  # probably not needed
 
+        self.cache_value_weight = 1.0  # applies only on files already in cache
+
         self.cache_size = CacheSize
         self.cache_hwm = .95 * self.cache_size
         self.cache_lwm = .90 * self.cache_size
         self.cache_kbytes = 0
         self.cache_content = {}
         self.files_processed = 0
+        self.data_processed = 0
+
+        self.monitoring = []
 
         self.weight = 0  # delivered in next cycle.
         self.found_in_cache = False  # from previous cycle
@@ -49,9 +55,14 @@ class CacheEnv(gym.Env):
     def load_access_data(self):
         # last variable is the fileID.
         with pd.HDFStore(self.accesses_filename) as hdf:
-            print("keys in file:", self.accesses_filename, ':', hdf.keys())
+            # print("keys in file:", self.accesses_filename, ':', hdf.keys())
             self.accesses = hdf.select('data')
             print("accesses loaded:", self.accesses.shape[0])
+
+    def save_monitoring_data(self):
+        mdata = pd.DataFrame(self.monitoring, columns=['kB', 'cache size', 'cache hit', 'reward'])
+        # print(mdata)
+        mdata.to_hdf('monitoring.h5', key='monitoring', mode='w', complevel=1)
 
     def seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
@@ -90,13 +101,19 @@ class CacheEnv(gym.Env):
         self.found_in_cache = fID in self.cache_content
         # print('found in cache', self.found_in_cache, fID, self.cache_content)
         if self.found_in_cache:
-            self.weight = fs * 0.05
+            # print('cache hit - 5%')
+            self.weight = fs * self.cache_value_weight
         else:
+            # print('cache miss - 100%')
             self.weight = fs
             self.cache_kbytes += fs
 
         self.cache_content[fID] = (self.files_processed, fs)
+
+        self.monitoring.append([fs, self.cache_kbytes, self.found_in_cache, int(reward)])
+
         self.files_processed += 1
+        self.data_processed += fs
 
         state = [row['1'], row['2'], row['3'], row['4'], row['5'], row['6'],
                  fs, self.cache_kbytes * 100 // self.cache_size]
@@ -107,17 +124,26 @@ class CacheEnv(gym.Env):
         self.files_processed = 0
         self.cache_content = {}
         self.cache_kbytes = 0
+        self.monitoring = []
+
         return self.step(0)[0]
 
     def render(self, mode='human'):
-        screen_width = 600
-        screen_height = 400
-
-        if self.viewer is None:
-            from gym.envs.classic_control import rendering
-            self.viewer = rendering.Viewer(screen_width, screen_height)
+        # screen_width = 600
+        # screen_height = 400
+        # if self.viewer is None:  # creation of entities.
+        #     from gym.envs.classic_control import rendering
+        #     self.viewer = rendering.Viewer(screen_width, screen_height)
+        #     l, r, t, b = -20 / 2, 20 / 2, 40 / 2, -40 / 2
+        #     cart = rendering.FilledPolygon([(l, b), (l, t), (r, t), (r, b)])
+        #     self.carttrans = rendering.Transform()
+        #     cart.add_attr(self.carttrans)
+        #     self.viewer.add_geom(cart)
+        # return self.viewer.render(return_rgb_array=mode == 'rgb_array')
+        return
 
     def close(self):
+        self.save_monitoring_data()
         if self.viewer:
             self.viewer.close()
             self.viewer = None
