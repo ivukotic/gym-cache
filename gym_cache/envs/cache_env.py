@@ -16,9 +16,12 @@ logger = logging.getLogger(__name__)
 class CacheEnv(gym.Env):
 
     metadata = {'render.modes': ['human']}
-    actions_num = 1  # estimated probability that a file is in cache.
+    actions_num = 1  # best guess if the file is in the cache/should be kept in cache
 
     def __init__(self, InputData, CacheSize):
+
+        self.name = '100TB_LRU'
+
         self.accesses_filename = InputData + '.h5'
 
         self.load_access_data()
@@ -49,8 +52,7 @@ class CacheEnv(gym.Env):
             high=np.array([maxes[0], maxes[1], maxes[2], maxes[3], maxes[4], maxes[5], maxes[6], 100]),
             dtype=np.int32
         )
-        print('environment loaded!')
-        print('cache size [kB]:', self.cache_size)
+        print('environment loaded!  cache size [kB]:', self.cache_size)
 
     def load_access_data(self):
         # last variable is the fileID.
@@ -61,8 +63,7 @@ class CacheEnv(gym.Env):
 
     def save_monitoring_data(self):
         mdata = pd.DataFrame(self.monitoring, columns=['kB', 'cache size', 'cache hit', 'reward'])
-        # print(mdata)
-        mdata.to_hdf('monitoring.h5', key='monitoring', mode='w', complevel=1)
+        mdata.to_hdf('results/' + self.name + '.h5', key=self.name, mode='w', complevel=1)
 
     def seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)
