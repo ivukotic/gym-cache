@@ -33,7 +33,7 @@ register(
     entry_point='gym_cache.envs:CacheContinousEnv',
     kwargs={
         'InputData': 'data/ANALY_MWT2_UCORE_processed',
-        'CacheSize': 1024 * 1024 * 1024
+        'CacheSize': 100 * 1024 * 1024 * 1024
     },
     # reward_threshold=1.0,
     max_episode_steps=20000000,

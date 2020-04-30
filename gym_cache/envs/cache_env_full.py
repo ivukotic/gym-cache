@@ -1,7 +1,3 @@
-# import os
-# import time
-# import signal
-# import matplotlib.pyplot as plt
 import gym
 from gym import spaces
 # from gym import error, utils
@@ -39,6 +35,10 @@ class CacheEnv(gym.Env):
         self.files_processed = 0
         self.data_processed = 0
 
+        self.cleanup = False  # state of running
+        self.clean_list = None
+        self.clean_counter = 0
+
         self.monitoring = []
 
         self.weight = 0  # delivered in next cycle.
@@ -71,30 +71,53 @@ class CacheEnv(gym.Env):
         self.np_random, seed = seeding.np_random(seed)
         return [seed]
 
-    def _cache_cleanup(self):
-        # order files by access instance
-        acc = pd.DataFrame.from_dict(self.cache_content, orient='index', columns=['accNo', 'fs']).sort_values(by='accNo', axis=0)
-        # starting from lowest number remove from cache
-        counter = 0
-        while self.cache_kbytes > self.cache_lwm:
-            row = acc.iloc[counter, :]
+    def _cache_cleanup(self, action):
+
+        if action == 0:
+            print('cleaning previous file')
+            row = self.clean_list.iloc[self.clean_counter, :]
             self.cache_kbytes -= row['fs']
             del self.cache_content[row.name]
-            counter += 1
-        # print('cleaned', counter, 'files.')
+
+        self.clean_counter += 1
+        if self.clean_counter == self.clean_list.shape[0]:
+            print('failed to cleanup enough data.')
+            return np.array(), 0, True, {'cleanup': True}
+
+        row = self.clean_list.iloc[self.clean_counter, :]
+        state = [row['1'], row['2'], row['3'], row['4'], row['5'], row['6'],
+                 row['kB'], self.cache_kbytes * 100 // self.cache_size]
+
+        # check if cleaning needs to be stopped.
+        # The last file will still be asked about.
+        if self.cache_kbytes < self.cache_lwm:
+            del self.clean_list
+            self.cleanup = False
+
+        return np.array(state), 0, False, {'cleanup': True}
+
+    def _init_cleanup(self):
+        self.cleanup = True
+        # order files by access instance
+        self.clean_list = pd.DataFrame.from_dict(
+            self.cache_content, orient='index', columns=['accNo', 'fs']
+        ).sort_values(by='accNo', axis=0)
+        self.clean_counter = 0
 
     def step(self, action):
+
+        # check if we are in regular running or cleanup mode
+        if self.cleanup:
+            return self._cache_cleanup(action)
+        else:
+            if self.cache_kbytes > self.cache_hwm:
+                # print('cache cleanup on access:', self.files_processed, 'cache filled:', self.cache_kbytes)
+                self._init_cleanup()
 
         # calculate reward from old weight, was it in cache and action
         reward = self.weight
         if (self.found_in_cache and action == 0) or (not self.found_in_cache and action == 1):
             reward = -reward
-
-        # """ checks if cache hit HWM """
-        # print('cache filled:', self.cache_kbytes)
-        if self.cache_kbytes > self.cache_hwm:
-            # print('cache cleanup starting on access:', self.files_processed)
-            self._cache_cleanup()
 
         row = self.accesses.iloc[self.files_processed, :]
         fID = row['fID']
@@ -121,7 +144,7 @@ class CacheEnv(gym.Env):
         state = [row['1'], row['2'], row['3'], row['4'], row['5'], row['6'],
                  fs, self.cache_kbytes * 100 // self.cache_size]
 
-        return np.array(state), int(reward), False, {}
+        return np.array(state), int(reward), False, {'cleanup': False}
 
     def reset(self):
         self.files_processed = 0
