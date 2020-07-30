@@ -1,11 +1,11 @@
+# reads raw data on data accesses.
+# tokenizes scopes and filenames
 import numpy as np
 import pandas as pd
 
 
-pq = 'ANALY_MWT2_UCORE'
-with pd.HDFStore(pq + '.h5') as hdf:
-    print("keys:", hdf.keys())
-    data = hdf.select('data')
+pq = 'MWT2'
+data= pd.read_parquet(pq + '.pa')
 
 print(data.head(10))
 
@@ -97,4 +97,4 @@ all_tokens.sort_values(by='time', axis='index', inplace=True, ascending=True)
 all_tokens.set_index('time', inplace=True)
 print(all_tokens.head(15))
 
-all_tokens.to_hdf(pq + '_processed.h5', key='data', mode='w', complevel=1)
+all_tokens.to_parquet(pq + '_processed.pa', engine='pyarrow')

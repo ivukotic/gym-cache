@@ -4,15 +4,13 @@ import pandas as pd
 # import numpy as np
 TB = 1024 * 1024 * 1024
 
-df = None
 # name = 'InfiniteCache_LRU'
 # name = '20TB_LRU'
 name = '100TB_LRU'
 
-with pd.HDFStore(name + '.h5') as hdf:
-    print("keys in file:", name, ':', hdf.keys())
-    df = hdf.select(name)
-    print("data loaded:", df.shape[0])
+
+df = pd.read_parquet(name + '.pa')
+print("data loaded:", df.shape[0])
 
 print(df)
 df['ch_files'] = df['cache hit'].cumsum()
