@@ -20,7 +20,7 @@ class CacheEnv(gym.Env):
         self.name = '100TB_DDQN'
         # self.name = 'InfiniteCache_DDQN'
 
-        self.accesses_filename = InputData + '.h5'
+        self.accesses_filename = InputData + '.pa'
 
         self.load_access_data()
         self.seed()  # probably not needed
@@ -58,14 +58,12 @@ class CacheEnv(gym.Env):
 
     def load_access_data(self):
         # last variable is the fileID.
-        with pd.HDFStore(self.accesses_filename) as hdf:
-            # print("keys in file:", self.accesses_filename, ':', hdf.keys())
-            self.accesses = hdf.select('data')
-            print("accesses loaded:", self.accesses.shape[0])
+        self.accesses= pd.read_parquet(self.accesses_filename)
+        print("accesses loaded:", self.accesses.shape[0])
 
     def save_monitoring_data(self):
         mdata = pd.DataFrame(self.monitoring, columns=['kB', 'cache size', 'cache hit', 'reward'])
-        mdata.to_hdf('results/' + self.name + '.h5', key=self.name, mode='w', complevel=1)
+        mdata.to_parquet('results/' + self.name + '.pa', engine='pyarrow')
 
     def seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)

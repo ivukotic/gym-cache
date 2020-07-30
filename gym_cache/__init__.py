@@ -8,7 +8,7 @@ register(
     id='Cache-v0',
     entry_point='gym_cache.envs:CacheEnv',
     kwargs={
-        'InputData': 'data/ANALY_MWT2_UCORE_processed',
+        'InputData': 'data/MWT2_processed',
         'CacheSize': 100 * 1024 * 1024 * 1024
     },
     # reward_threshold=1.0,
@@ -20,7 +20,7 @@ register(
     id='Cache-large-v0',
     entry_point='gym_cache.envs:CacheEnv',
     kwargs={
-        'InputData': 'data/ANALY_MWT2_UCORE_processed',
+        'InputData': 'data/MWT2_processed',
         'CacheSize': 100 * 1024 * 1024 * 1024
     },
     # reward_threshold=1.0,
@@ -32,7 +32,7 @@ register(
     id='Cache-continuous-v0',
     entry_point='gym_cache.envs:CacheContinousEnv',
     kwargs={
-        'InputData': 'data/ANALY_MWT2_UCORE_processed',
+        'InputData': 'data/MWT2_processed',
         'CacheSize': 100 * 1024 * 1024 * 1024
     },
     # reward_threshold=1.0,

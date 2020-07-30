@@ -18,7 +18,7 @@ class CacheContinousEnv(gym.Env):
     actions_num = 1  # estimated probability that a file is in cache.
 
     def __init__(self, InputData, CacheSize):
-        self.accesses_filename = InputData + '.h5'
+        self.accesses_filename = InputData + '.pa'
         self.load_access_data()
         self.cache_hwm = .95
         self.cache_lwm = .90
@@ -37,10 +37,8 @@ class CacheContinousEnv(gym.Env):
         print('environment loaded!')
 
     def load_access_data(self):
-        with pd.HDFStore(self.accesses_filename) as hdf:
-            print("keys in file:", self.accesses_filename, ':', hdf.keys())
-            self.accesses = hdf.select('data')
-            print(self.accesses.head())
+        self.accesses= pd.read_parquet(self.accesses_filename)
+        print(self.accesses.head())
 
     def __del__(self):
         pass
