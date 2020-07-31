@@ -28,6 +28,7 @@ register(
     nondeterministic=True,
 )
 
+# continuous action cache
 register(
     id='Cache-continuous-v0',
     entry_point='gym_cache.envs:CacheContinousEnv',
