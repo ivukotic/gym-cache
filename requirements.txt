@@ -4,3 +4,4 @@ tqdm
 twine
 pandas
 gym
+stable_baselines
