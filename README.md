@@ -1,9 +1,9 @@
-# gym-cache
+# gym_cache
 OpenAI based Gym environments for training RL caching agent
 
 install it:
 <code>
-   pip install gym-cache
+   pip install gym_cache
 </code> 
 
 import it like this:
@@ -11,7 +11,7 @@ import it like this:
 <code>
 import gym
 
-gym.make('gym-cache:Cache-v0')
+gym.make('gym_cache:Cache-v0')
 </code>
 
 

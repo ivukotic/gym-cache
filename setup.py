@@ -4,8 +4,8 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name='gym-cache',
-    version='1.0.0',
+    name='gym_cache',
+    version='1.0.1',
     install_requires=[
         'gym>=0.2.3',
         'pandas>=0.24.2',
@@ -17,7 +17,7 @@ setuptools.setup(
     description="gym environment simulating file cache.",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/ivukotic/gym-cache",
+    url="https://github.com/ivukotic/gym_cache",
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",

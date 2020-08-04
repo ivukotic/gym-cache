@@ -2,7 +2,7 @@
 
 import gym
 
-env = gym.make('gym-cache:Cache-v0')
+env = gym.make('gym_cache:Cache-v0')
 env.reset()
 
 total_reward = 0
