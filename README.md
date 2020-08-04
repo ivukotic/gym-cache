@@ -2,16 +2,16 @@
 OpenAI based Gym environments for training RL caching agent
 
 install it:
-
 <code>
-python -m pip install --user -e .
-</code>
+   pip install gym-cache
+</code> 
 
 import it like this:
 
 <code>
 import gym
-gym.make('gym_cache:Cache-v0')
+
+gym.make('gym-cache:Cache-v0')
 </code>
 
 
@@ -20,7 +20,7 @@ observation space has following variables:
 * file size \[kB\]
 * how full is the cache at that moment
 
-There are two discrete action environments (*Cache-v0* and *Cache-large-v0*) and one discrete action environment (*Cache-continuous-v0*).
+There are two discrete action environments (*Cache-v0* and *Cache-large-v0*) and one continuous action environment (*Cache-continuous-v0*).
 
 
 ## Data extractions and preprocessing
@@ -39,11 +39,10 @@ It is a parque file (.pa) with one dataframe:
 ## Rewards
 * always negative and correspond to cost to get the file - if it was cached it will be smaller
 * files are cached irrespectively from what action actor performed for the file
-* cleanup
-   * discrete environment - removes ones with 
+* cleanup: environment memorizes actions. on cleanup it first deletes files judged not to be needed again (action 0 in discrete environments or smaller values in continues environment). If multiple files have the same action value, LRU one is removed first.
 
 
-# Technical implementation in XCache server
+## Possible technical implementation in XCache server
 * There are additional containers in the pod. 
     * environment container
        * recieves gstream pfc, and disk info
@@ -53,3 +52,22 @@ It is a parque file (.pa) with one dataframe:
     * redis db - used by environment container to store actor responses
     * actor container 
     
+
+## Miscalenious
+
+To change environments:
+* clone github repository
+* make changes
+* install locally:    
+   <code>  python -m pip install --user -e .  </code>
+   or
+   <code>
+   python setup.py bdist_wheel
+   python -m pip install dist\gym_cache-1.0.0-py3-none-any.whl
+   </code> 
+* to upload to pypi repository
+   <code>
+   # create %USER%\.pypirc file first. 
+   python setup.py bdist_wheel
+   python -m twine upload dist\*
+   </code> 

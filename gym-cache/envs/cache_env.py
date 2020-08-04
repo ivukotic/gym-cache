@@ -20,9 +20,8 @@ class CacheEnv(gym.Env):
 
     def __init__(self, InputData, CacheSize):
 
-        self.name = '100TB_LRU'
-        # self.name = '100TB_DDQN'
-        # self.name = 'InfiniteCache_DDQN'
+        self.name = '100TB'
+        self.actor_name = 'default'
 
         self.accesses_filename = InputData + '.pa'
 
@@ -61,6 +60,9 @@ class CacheEnv(gym.Env):
         )
         print('environment loaded!  cache size [kB]:', self.cache_size)
 
+    def set_actor_name(self, actor):
+        self.actor_name = actor
+
     def load_access_data(self):
         # last variable is the fileID.
         self.accesses = pd.read_parquet(self.accesses_filename)
@@ -71,7 +73,8 @@ class CacheEnv(gym.Env):
     def save_monitoring_data(self):
         mdata = pd.DataFrame(self.monitoring, columns=[
                              'kB', 'cache size', 'cache hit', 'reward'])
-        mdata.to_parquet('results/' + self.name + '.pa', engine='pyarrow')
+        mdata.to_parquet('results/' + self.name + '_' +
+                         self.actor_name + '.pa', engine='pyarrow')
 
     def seed(self, seed=None):
         self.np_random, seed = seeding.np_random(seed)

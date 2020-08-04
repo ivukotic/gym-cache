@@ -1,0 +1,6 @@
+setuptools 
+wheel
+tqdm
+twine
+pandas
+gym
