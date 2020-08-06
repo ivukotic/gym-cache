@@ -12,6 +12,8 @@ import numpy as np
 import logging
 logger = logging.getLogger(__name__)
 
+TB = 1024 * 1024 * 1024  # filesize is in kb so here TB is this.
+
 
 class CacheEnv(gym.Env):
 
@@ -20,7 +22,7 @@ class CacheEnv(gym.Env):
 
     def __init__(self, InputData, CacheSize):
 
-        self.name = '100TB'
+        self.name = '{}TB'.format(CacheSize/TB)
         self.actor_name = 'default'
 
         self.accesses_filename = InputData + '.pa'

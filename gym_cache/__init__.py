@@ -9,7 +9,7 @@ register(
     entry_point='gym_cache.envs:CacheEnv',
     kwargs={
         'InputData': 'data/MWT2_processed',
-        'CacheSize': 100 * 1024 * 1024 * 1024
+        'CacheSize': 10 * 1024 * 1024 * 1024
     },
     # reward_threshold=1.0,
     max_episode_steps=20000000,

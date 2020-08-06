@@ -8,6 +8,8 @@ import numpy as np
 import logging
 logger = logging.getLogger(__name__)
 
+# this one should not be used. It has cache cleaning based on new queries to actor.
+
 
 class CacheEnv(gym.Env):
 
@@ -51,18 +53,20 @@ class CacheEnv(gym.Env):
         self.observation_space = spaces.Box(
             # first 6 are tokens, 7th is filesize, 8th is how full is cache at the moment
             low=np.array([0, 0, 0, 0, 0, 0, 0, 0]),
-            high=np.array([maxes[0], maxes[1], maxes[2], maxes[3], maxes[4], maxes[5], maxes[6], 100]),
+            high=np.array([maxes[0], maxes[1], maxes[2], maxes[3],
+                           maxes[4], maxes[5], maxes[6], 100]),
             dtype=np.int32
         )
         print('environment loaded!  cache size [kB]:', self.cache_size)
 
     def load_access_data(self):
         # last variable is the fileID.
-        self.accesses= pd.read_parquet(self.accesses_filename)
+        self.accesses = pd.read_parquet(self.accesses_filename)
         print("accesses loaded:", self.accesses.shape[0])
 
     def save_monitoring_data(self):
-        mdata = pd.DataFrame(self.monitoring, columns=['kB', 'cache size', 'cache hit', 'reward'])
+        mdata = pd.DataFrame(self.monitoring, columns=[
+                             'kB', 'cache size', 'cache hit', 'reward'])
         mdata.to_parquet('results/' + self.name + '.pa', engine='pyarrow')
 
     def seed(self, seed=None):
@@ -134,7 +138,8 @@ class CacheEnv(gym.Env):
 
         self.cache_content[fID] = (self.files_processed, fs)
 
-        self.monitoring.append([fs, self.cache_kbytes, self.found_in_cache, int(reward)])
+        self.monitoring.append(
+            [fs, self.cache_kbytes, self.found_in_cache, int(reward)])
 
         self.files_processed += 1
         self.data_processed += fs
