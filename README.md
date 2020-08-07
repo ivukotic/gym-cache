@@ -63,7 +63,7 @@ To change environments:
    or
    <code>
    python setup.py bdist_wheel
-   python -m pip install dist\gym_cache-1.0.1-py3-none-any.whl
+   python -m pip install dist\gym_cache-1.0.3-py3-none-any.whl
    </code> 
 * to upload to pypi repository
    <code>

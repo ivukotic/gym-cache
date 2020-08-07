@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name='gym_cache',
-    version='1.0.2',
+    version='1.0.3',
     install_requires=[
         'gym>=0.2.3',
         'pandas>=0.24.2',
