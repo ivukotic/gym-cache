@@ -38,6 +38,7 @@ It is a parque file (.pa) with one dataframe:
 
 ## Rewards
 * always negative and correspond to cost to get the file - if it was cached it will be smaller
+ (Currently it gives positive for good guess and negative for mistakes. cost = 1 * filesize)
 * files are cached irrespectively from what action actor performed for the file
 * cleanup: environment memorizes actions. on cleanup it first deletes files judged not to be needed again (action 0 in discrete environments or smaller values in continues environment). If multiple files have the same action value, LRU one is removed first.
 
